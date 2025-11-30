@@ -1,0 +1,18 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjIwMzc1NCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweGZDOTBGMUE1Q2Y1MmNlZTc1QkRmNDk2MTRhNkIxRjFhNUUxRDY1MDYifQ",
+    "payload": "eyJkb21haW4iOiJzYXRvc2hpbmFrYS5mYXJjYXN0ZXIueHl6In0",
+    "signature": "UPMJAodpfL9pdMF3CF8vr0EeshtZX/z7L4kEzTMWYM02r+NaYJDABveCAoH8jwBqgLtN68TyW6BVYvlDxNivTBw="
+  },
+  "frame": {
+    "version": "1",
+    "name": "VibEscrow",
+    "iconUrl": "https://satoshinaka.farcaster.xyz/icon.png",
+    "homeUrl": "https://satoshinaka.farcaster.xyz",
+    "imageUrl": "https://satoshinaka.farcaster.xyz/api/image",
+    "buttonTitle": "Scambia NFT",
+    "splashImageUrl": "https://satoshinaka.farcaster.xyz/api/splash",
+    "splashBackgroundColor": "#1a1a2e",
+    "webhookUrl": "https://satoshinaka.farcaster.xyz/api/webhook"
+  }
+}
