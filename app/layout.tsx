@@ -7,14 +7,14 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 const APP_NAME = "VibEscrow"
-const APP_URL = "https://your-vibescrow.vercel.app"
+const APP_URL = "https://satoshinaka.farcaster.xyz"
 
 export const metadata = {
   title: APP_NAME,
-  description: "Scambia NFT multipli in modo sicuro su Farcaster con escrow.",
+  description: "Secure NFT swap escrow on Farcaster focused on Vibe.market collections.",
   openGraph: {
     title: APP_NAME,
-    description: "Scambia NFT multipli in modo sicuro su Farcaster con escrow.",
+    description: "Secure NFT swap escrow on Farcaster focused on Vibe.market collections.",
     url: APP_URL,
     siteName: APP_NAME,
     images: [{ url: `${APP_URL}/api/og`, width: 1200, height: 630, alt: APP_NAME }],
@@ -31,13 +31,20 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="it" className="dark">
+    <html lang="en" className="dark">
       <head>
         <script src="https://cdn.farcaster.xyz/actions.js" defer />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/icons/flame-mascot-192.png" />
+        <link rel="apple-touch-icon" href="/icons/flame-mascot-192.png" />
+        <meta name="theme-color" content="#ff7a1a" />
         <meta name="fc:frame" content="vNext" />
         <meta name="fc:miniapp" content="v1" />
         <meta property="og:title" content="VibEscrow" />
-        <meta property="og:description" content="Scambia NFT multipli in modo sicuro su Farcaster con escrow." />
+        <meta
+          property="og:description"
+          content="Secure NFT swap escrow on Farcaster focused on Vibe.market collections."
+        />
         <meta property="og:image" content={`${APP_URL}/api/og`} />
       </head>
       <body className="font-sans antialiased">

@@ -1,6 +1,9 @@
 // Contract configuration and ABIs for NFTSwapEscrow
 export const CONTRACT_ADDRESS = "0x..." // TODO: Add your deployed contract address
 
+export const BASE_RPC_URL = "https://mainnet.base.org"
+export const BASE_CHAIN_ID = 8453
+
 export const CONTRACT_ABI = [
   {
     inputs: [

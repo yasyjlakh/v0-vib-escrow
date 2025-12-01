@@ -10,9 +10,9 @@
     "iconUrl": "https://satoshinaka.farcaster.xyz/icon.png",
     "homeUrl": "https://satoshinaka.farcaster.xyz",
     "imageUrl": "https://satoshinaka.farcaster.xyz/api/image",
-    "buttonTitle": "Scambia NFT",
+    "buttonTitle": "Swap NFTs",
     "splashImageUrl": "https://satoshinaka.farcaster.xyz/api/splash",
-    "splashBackgroundColor": "#1a1a2e",
+    "splashBackgroundColor": "#050308",
     "webhookUrl": "https://satoshinaka.farcaster.xyz/api/webhook"
   }
 }
