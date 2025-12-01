@@ -1,5 +1,7 @@
-// NFT fetching service using Base RPC and Reservoir API
+// NFT fetching service using Alchemy API on Base
 export const BASE_RPC_URL = "https://mainnet.base.org"
+export const ALCHEMY_API_KEY = "yJxcTgiBZRrzHFQ235D_C"
+export const ALCHEMY_BASE_URL = "https://base-mainnet.g.alchemy.com/v2/yJxcTgiBZRrzHFQ235D_C"
 
 // Vibe.market known collections on Base
 export const VIBE_COLLECTIONS = [
@@ -15,68 +17,96 @@ export interface NFTMetadata {
   owner: string
 }
 
-// ERC721 ABI for basic metadata
-const ERC721_METADATA_ABI = [
-  "function tokenURI(uint256 tokenId) view returns (string)",
-  "function name() view returns (string)",
-  "function symbol() view returns (string)",
-  "function balanceOf(address owner) view returns (uint256)",
-  "function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)",
-  "function ownerOf(uint256 tokenId) view returns (address)",
-]
-
-// Fetch NFTs owned by address using Reservoir API (Base)
+// Fetch NFTs owned by address using Alchemy NFT API (Base)
 export async function fetchWalletNFTs(address: string): Promise<NFTMetadata[]> {
   try {
-    // Use Reservoir API for Base
-    const response = await fetch(`https://api-base.reservoir.tools/users/${address}/tokens/v10?limit=100`, {
-      headers: {
-        accept: "*/*",
+    const response = await fetch(
+      `${ALCHEMY_BASE_URL}/getNFTsForOwner?owner=${address}&withMetadata=true&pageSize=100`,
+      {
+        headers: {
+          accept: "application/json",
+        },
       },
-    })
+    )
 
     if (!response.ok) {
-      throw new Error("Failed to fetch NFTs")
+      throw new Error("Failed to fetch NFTs from Alchemy")
     }
 
     const data = await response.json()
 
     return (
-      data.tokens?.map((item: any) => ({
-        tokenId: item.token?.tokenId || "0",
-        collection: item.token?.contract || "",
-        collectionName: item.token?.collection?.name || "Unknown Collection",
-        name: item.token?.name || `#${item.token?.tokenId}`,
-        image: item.token?.image || item.token?.imageSmall || "/digital-art-collection.png",
-        owner: address,
-      })) || []
+      data.ownedNfts?.map((nft: any) => {
+        const metadata = nft.metadata || {}
+        const media = nft.media?.[0] || {}
+
+        return {
+          tokenId: nft.tokenId || "0",
+          collection: nft.contract?.address || "",
+          collectionName: nft.contract?.name || nft.contract?.symbol || "Unknown Collection",
+          name: metadata.name || `#${nft.tokenId}`,
+          image: media.gateway || media.raw || metadata.image || "/digital-art-collection.png",
+          owner: address,
+        }
+      }) || []
     )
   } catch (error) {
-    console.error("Error fetching NFTs:", error)
+    console.error("Error fetching NFTs from Alchemy:", error)
     return []
   }
 }
 
-// Fetch collection info
+// Fetch collection info using Alchemy
 export async function fetchCollectionInfo(collectionAddress: string): Promise<{ name: string; image: string } | null> {
   try {
-    const response = await fetch(`https://api-base.reservoir.tools/collections/v7?id=${collectionAddress}`, {
+    const response = await fetch(`${ALCHEMY_BASE_URL}/getContractMetadata?contractAddress=${collectionAddress}`, {
       headers: {
-        accept: "*/*",
+        accept: "application/json",
       },
     })
 
     if (!response.ok) return null
 
     const data = await response.json()
-    const collection = data.collections?.[0]
 
     return {
-      name: collection?.name || "Unknown",
-      image: collection?.image || "",
+      name: data.name || data.symbol || "Unknown",
+      image: data.openSeaMetadata?.imageUrl || "",
     }
   } catch (error) {
-    console.error("Error fetching collection:", error)
+    console.error("Error fetching collection from Alchemy:", error)
+    return null
+  }
+}
+
+// Fetch specific NFT metadata using Alchemy
+export async function fetchNFTMetadata(collectionAddress: string, tokenId: string): Promise<NFTMetadata | null> {
+  try {
+    const response = await fetch(
+      `${ALCHEMY_BASE_URL}/getNFTMetadata?contractAddress=${collectionAddress}&tokenId=${tokenId}&refreshCache=false`,
+      {
+        headers: {
+          accept: "application/json",
+        },
+      },
+    )
+
+    if (!response.ok) return null
+
+    const nft = await response.json()
+    const metadata = nft.metadata || {}
+    const media = nft.media?.[0] || {}
+
+    return {
+      tokenId: nft.tokenId || tokenId,
+      collection: collectionAddress,
+      collectionName: nft.contract?.name || "Unknown",
+      name: metadata.name || `#${tokenId}`,
+      image: media.gateway || media.raw || metadata.image || "/digital-art-collection.png",
+      owner: "",
+    }
+  } catch (error) {
+    console.error("Error fetching NFT metadata from Alchemy:", error)
     return null
   }
 }
