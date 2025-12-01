@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Sparkles, Zap, Rocket } from "lucide-react"
 
 export default function Home() {
-  const [currentTab, setCurrentTab] = useState("offers")
+  const [currentTab, setCurrentTab] = useState("create")
 
   useEffect(() => {
     sdk.actions.ready()
@@ -42,12 +42,15 @@ export default function Home() {
 
           {/* Title section */}
           <div className="text-center mt-8 mb-6">
-            <h1 className="text-4xl font-black tracking-tight">
+            <h1 className="text-4xl font-black tracking-tight" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               <span className="bg-gradient-to-r from-cyan-400 via-pink-400 to-yellow-400 bg-clip-text text-transparent drop-shadow-lg">
                 VibEscrow
               </span>
             </h1>
-            <p className="text-lg font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent mt-1">
+            <p
+              className="text-lg font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent mt-1"
+              style={{ fontFamily: "'JetBrains Mono', monospace" }}
+            >
               NFTs Swapper
             </p>
             <p className="text-xs text-cyan-300/70 mt-2">Secure swaps on Base</p>

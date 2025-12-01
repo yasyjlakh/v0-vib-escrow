@@ -1,10 +1,12 @@
 import type React from "react"
 import { Geist, Geist_Mono } from "next/font/google"
+import { JetBrains_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
+const _jetBrainsMono = JetBrains_Mono({ subsets: ["latin"], weight: ["700", "800"] })
 
 const APP_NAME = "VibEscrow"
 const APP_URL = "https://satoshinaka.farcaster.xyz"

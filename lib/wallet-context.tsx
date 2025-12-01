@@ -50,45 +50,51 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const savedAddress = localStorage.getItem(STORAGE_KEY)
       if (savedAddress) {
         setAddress(savedAddress)
+        console.log("[v0] Restored wallet address from storage:", savedAddress)
+        return
       }
 
       try {
         const provider = await sdk.wallet.ethProvider
         if (provider) {
           setFarcasterProvider(provider)
-          // Check if already connected
-          try {
-            const accounts = (await provider.request({ method: "eth_accounts" })) as string[]
-            if (accounts.length > 0) {
-              updateAddress(accounts[0])
-            }
-          } catch (e) {
-            // Not connected yet
+          const accounts = (await provider.request({ method: "eth_accounts" })) as string[]
+          if (accounts.length > 0) {
+            updateAddress(accounts[0])
+            console.log("[v0] Connected via Farcaster wallet:", accounts[0])
+            return
           }
         }
       } catch (e) {
-        // Farcaster SDK not available
+        console.log("[v0] Farcaster provider not available")
       }
 
-      if (typeof window.ethereum !== "undefined") {
+      if (typeof window !== "undefined" && window.ethereum) {
         try {
           const accounts = (await window.ethereum.request({
             method: "eth_accounts",
           })) as string[]
           if (accounts.length > 0) {
             updateAddress(accounts[0])
+            console.log("[v0] Connected via injected wallet:", accounts[0])
           }
         } catch (error) {
-          // Wallet not connected
+          console.log("[v0] Injected wallet check failed")
         }
 
-        // Listen for account changes
         window.ethereum.on?.("accountsChanged", (accounts: string[]) => {
+          console.log("[v0] Account changed:", accounts)
           if (accounts.length > 0) {
             updateAddress(accounts[0])
           } else {
             updateAddress(null)
           }
+        })
+
+        // Listen for chain changes
+        window.ethereum.on?.("chainChanged", () => {
+          console.log("[v0] Chain changed, refreshing...")
+          window.location.reload()
         })
       }
     }
@@ -98,40 +104,43 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const connect = useCallback(async () => {
     setIsConnecting(true)
+    console.log("[v0] Starting wallet connection...")
     try {
       if (farcasterProvider) {
         try {
+          console.log("[v0] Attempting Farcaster connection...")
           const accounts = (await farcasterProvider.request({
             method: "eth_requestAccounts",
           })) as string[]
           if (accounts.length > 0) {
             updateAddress(accounts[0])
-            setIsConnecting(false)
+            console.log("[v0] Farcaster connection successful:", accounts[0])
             return
           }
         } catch (e) {
-          // Farcaster wallet failed, try injected
+          console.log("[v0] Farcaster connection failed, trying injected wallet")
         }
       }
 
-      if (typeof window.ethereum !== "undefined") {
+      if (typeof window !== "undefined" && window.ethereum) {
+        console.log("[v0] Attempting injected wallet connection...")
         const accounts = (await window.ethereum.request({
           method: "eth_requestAccounts",
         })) as string[]
         if (accounts.length > 0) {
           updateAddress(accounts[0])
-          setIsConnecting(false)
+          console.log("[v0] Injected wallet connection successful:", accounts[0])
           return
         }
       }
 
-      alert("Nessun wallet trovato! Installa MetaMask o usa Farcaster.")
+      alert("No wallet found! Install MetaMask or use Farcaster.")
     } catch (error: any) {
+      console.error("[v0] Wallet connection error:", error)
       if (error.code === 4001) {
-        // User rejected
+        console.log("[v0] User rejected connection")
       } else {
-        console.error("Errore connessione wallet:", error)
-        alert("Errore connessione wallet: " + error.message)
+        alert("Wallet connection error: " + error.message)
       }
     } finally {
       setIsConnecting(false)
