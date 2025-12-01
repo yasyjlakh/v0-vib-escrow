@@ -1,7 +1,6 @@
-// NFT fetching service using Alchemy API on Base
+// NFT fetching service using server API routes
+
 export const BASE_RPC_URL = "https://mainnet.base.org"
-export const ALCHEMY_API_KEY = "yJxcTgiBZRrzHFQ235D_C"
-export const ALCHEMY_BASE_URL = "https://base-mainnet.g.alchemy.com/v2/yJxcTgiBZRrzHFQ235D_C"
 
 // Vibe.market known collections on Base
 export const VIBE_COLLECTIONS = [
@@ -17,20 +16,14 @@ export interface NFTMetadata {
   owner: string
 }
 
-// Fetch NFTs owned by address using Alchemy NFT API (Base)
 export async function fetchWalletNFTs(address: string): Promise<NFTMetadata[]> {
   try {
-    const response = await fetch(
-      `${ALCHEMY_BASE_URL}/getNFTsForOwner?owner=${address}&withMetadata=true&pageSize=100`,
-      {
-        headers: {
-          accept: "application/json",
-        },
-      },
-    )
+    const response = await fetch(`/api/nft?action=getNFTsForOwner&owner=${address}`, {
+      headers: { accept: "application/json" },
+    })
 
     if (!response.ok) {
-      throw new Error("Failed to fetch NFTs from Alchemy")
+      throw new Error("Failed to fetch NFTs from server")
     }
 
     const data = await response.json()
@@ -51,18 +44,15 @@ export async function fetchWalletNFTs(address: string): Promise<NFTMetadata[]> {
       }) || []
     )
   } catch (error) {
-    console.error("Error fetching NFTs from Alchemy:", error)
+    console.error("Error fetching NFTs from server:", error)
     return []
   }
 }
 
-// Fetch collection info using Alchemy
 export async function fetchCollectionInfo(collectionAddress: string): Promise<{ name: string; image: string } | null> {
   try {
-    const response = await fetch(`${ALCHEMY_BASE_URL}/getContractMetadata?contractAddress=${collectionAddress}`, {
-      headers: {
-        accept: "application/json",
-      },
+    const response = await fetch(`/api/nft?action=getContractMetadata&contractAddress=${collectionAddress}`, {
+      headers: { accept: "application/json" },
     })
 
     if (!response.ok) return null
@@ -74,21 +64,16 @@ export async function fetchCollectionInfo(collectionAddress: string): Promise<{ 
       image: data.openSeaMetadata?.imageUrl || "",
     }
   } catch (error) {
-    console.error("Error fetching collection from Alchemy:", error)
+    console.error("Error fetching collection from server:", error)
     return null
   }
 }
 
-// Fetch specific NFT metadata using Alchemy
 export async function fetchNFTMetadata(collectionAddress: string, tokenId: string): Promise<NFTMetadata | null> {
   try {
     const response = await fetch(
-      `${ALCHEMY_BASE_URL}/getNFTMetadata?contractAddress=${collectionAddress}&tokenId=${tokenId}&refreshCache=false`,
-      {
-        headers: {
-          accept: "application/json",
-        },
-      },
+      `/api/nft?action=getNFTMetadata&contractAddress=${collectionAddress}&tokenId=${tokenId}`,
+      { headers: { accept: "application/json" } },
     )
 
     if (!response.ok) return null
@@ -106,7 +91,7 @@ export async function fetchNFTMetadata(collectionAddress: string, tokenId: strin
       owner: "",
     }
   } catch (error) {
-    console.error("Error fetching NFT metadata from Alchemy:", error)
+    console.error("Error fetching NFT metadata from server:", error)
     return null
   }
 }
