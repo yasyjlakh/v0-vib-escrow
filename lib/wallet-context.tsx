@@ -1,7 +1,6 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
-import { sdk } from "@farcaster/frame-sdk"
 
 interface WalletContextType {
   address: string | null
@@ -26,7 +25,6 @@ const STORAGE_KEY = "vibescrow_wallet_address"
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [address, setAddress] = useState<string | null>(null)
   const [isConnecting, setIsConnecting] = useState(false)
-  const [farcasterProvider, setFarcasterProvider] = useState<any>(null)
 
   const updateAddress = useCallback((newAddress: string | null) => {
     if (newAddress) {
@@ -52,21 +50,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         setAddress(savedAddress)
         console.log("[v0] Restored wallet address from storage:", savedAddress)
         return
-      }
-
-      try {
-        const provider = await sdk.wallet.ethProvider
-        if (provider) {
-          setFarcasterProvider(provider)
-          const accounts = (await provider.request({ method: "eth_accounts" })) as string[]
-          if (accounts.length > 0) {
-            updateAddress(accounts[0])
-            console.log("[v0] Connected via Farcaster wallet:", accounts[0])
-            return
-          }
-        }
-      } catch (e) {
-        console.log("[v0] Farcaster provider not available")
       }
 
       if (typeof window !== "undefined" && window.ethereum) {
@@ -106,22 +89,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setIsConnecting(true)
     console.log("[v0] Starting wallet connection...")
     try {
-      if (farcasterProvider) {
-        try {
-          console.log("[v0] Attempting Farcaster connection...")
-          const accounts = (await farcasterProvider.request({
-            method: "eth_requestAccounts",
-          })) as string[]
-          if (accounts.length > 0) {
-            updateAddress(accounts[0])
-            console.log("[v0] Farcaster connection successful:", accounts[0])
-            return
-          }
-        } catch (e) {
-          console.log("[v0] Farcaster connection failed, trying injected wallet")
-        }
-      }
-
       if (typeof window !== "undefined" && window.ethereum) {
         console.log("[v0] Attempting injected wallet connection...")
         const accounts = (await window.ethereum.request({
@@ -129,12 +96,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         })) as string[]
         if (accounts.length > 0) {
           updateAddress(accounts[0])
-          console.log("[v0] Injected wallet connection successful:", accounts[0])
+          console.log("[v0] Wallet connection successful:", accounts[0])
           return
         }
       }
 
-      alert("No wallet found! Install MetaMask or use Farcaster.")
+      alert("No wallet found! Please install MetaMask or another Web3 wallet.")
     } catch (error: any) {
       console.error("[v0] Wallet connection error:", error)
       if (error.code === 4001) {
@@ -145,7 +112,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsConnecting(false)
     }
-  }, [farcasterProvider, updateAddress])
+  }, [updateAddress])
 
   const disconnect = useCallback(async () => {
     updateAddress(null)

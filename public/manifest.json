@@ -1,7 +1,7 @@
 {
-  "name": "Vibe NFT Escrow",
+  "name": "VibEscrow",
   "short_name": "VibEscrow",
-  "description": "NFT swap and escrow interface focused on Vibe.market collections on Base.",
+  "description": "Secure NFT swap escrow on Farcaster - Swap NFTs on Base blockchain",
   "lang": "en",
   "dir": "ltr",
   "start_url": "/",
@@ -23,5 +23,14 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "/api/og",
+      "sizes": "1200x630",
+      "type": "image/png"
+    }
+  ],
+  "prefer_related_applications": false,
+  "categories": ["finance", "productivity"]
 }
