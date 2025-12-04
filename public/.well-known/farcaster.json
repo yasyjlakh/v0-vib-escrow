@@ -1,18 +1,18 @@
 {
   "accountAssociation": {
     "header": "eyJmaWQiOjIwMzc1NCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweGZDOTBGMUE1Q2Y1MmNlZTc1QkRmNDk2MTRhNkIxRjFhNUUxRDY1MDYifQ",
-    "payload": "eyJkb21haW4iOiJzYXRvc2hpbmFrYS5mYXJjYXN0ZXIueHl6In0",
+    "payload": "eyJkb21haW4iOiJ2MC12aWItZXNjcm93LnZlcmNlbC5hcHAifQ",
     "signature": "UPMJAodpfL9pdMF3CF8vr0EeshtZX/z7L4kEzTMWYM02r+NaYJDABveCAoH8jwBqgLtN68TyW6BVYvlDxNivTBw="
   },
   "frame": {
     "version": "1",
     "name": "VibEscrow",
-    "iconUrl": "https://satoshinaka.farcaster.xyz/icon.png",
-    "homeUrl": "https://satoshinaka.farcaster.xyz",
-    "imageUrl": "https://satoshinaka.farcaster.xyz/api/image",
+    "iconUrl": "https://v0-vib-escrow.vercel.app/icon.png",
+    "homeUrl": "https://v0-vib-escrow.vercel.app",
+    "imageUrl": "https://v0-vib-escrow.vercel.app/api/image",
     "buttonTitle": "Swap NFTs",
-    "splashImageUrl": "https://satoshinaka.farcaster.xyz/api/splash",
+    "splashImageUrl": "https://v0-vib-escrow.vercel.app/api/splash",
     "splashBackgroundColor": "#050308",
-    "webhookUrl": "https://satoshinaka.farcaster.xyz/api/webhook"
+    "webhookUrl": "https://v0-vib-escrow.vercel.app/api/webhook"
   }
 }
