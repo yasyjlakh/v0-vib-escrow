@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useMiniKit } from "@coinbase/onchainkit/minikit"
 import { ConnectWallet } from "@/components/connect-wallet"
 import { CreateOffer } from "@/components/create-offer"
 import { OffersList } from "@/components/offers-list"
@@ -10,18 +9,38 @@ import { WindowMenu } from "@/components/window-menu"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Sparkles, Zap, Rocket } from "lucide-react"
 
+function MiniKitInitializer() {
+  useEffect(() => {
+    // Try to initialize MiniKit if available
+    const initMiniKit = async () => {
+      try {
+        const { useMiniKit } = await import("@coinbase/onchainkit/minikit")
+        // MiniKit is available in context
+        console.log("[v0] MiniKit module loaded")
+      } catch (e) {
+        console.log("[v0] MiniKit not available, running in standalone mode")
+      }
+    }
+
+    // Also try the CDN-based miniapp SDK
+    if (typeof window !== "undefined" && (window as any).miniapp?.sdk) {
+      ;(window as any).miniapp.sdk.actions.ready()
+      console.log("[v0] Base MiniApp ready via CDN")
+    }
+
+    initMiniKit()
+  }, [])
+
+  return null
+}
+
 export default function Home() {
   const [currentTab, setCurrentTab] = useState("create")
-  const { setFrameReady } = useMiniKit()
-
-  useEffect(() => {
-    // Signal to Base that the MiniApp is ready
-    setFrameReady()
-    console.log("[v0] Base MiniApp ready")
-  }, [setFrameReady])
 
   return (
     <main className="flex-1 flex flex-col relative overflow-hidden">
+      <MiniKitInitializer />
+
       <div
         className="fixed inset-0 pointer-events-none z-0"
         style={{

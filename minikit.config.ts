@@ -1,7 +1,6 @@
-const ROOT_URL = process.env.NEXT_PUBLIC_APP_URL || "https://v0-vib-escrow.vercel.app/"
+const ROOT_URL = process.env.NEXT_PUBLIC_APP_URL || "https://v0-vib-escrow.vercel.app"
 
 export const minikitConfig = {
-  // accountAssociation will be added after account association is verified
   accountAssociation: {
     header: process.env.NEXT_PUBLIC_ACCOUNT_ASSOCIATION_HEADER || "",
     payload: process.env.NEXT_PUBLIC_ACCOUNT_ASSOCIATION_PAYLOAD || "",
@@ -11,7 +10,7 @@ export const minikitConfig = {
     version: "1",
     name: "VibEscrow",
     subtitle: "NFT Escrow Swaps",
-    description: "Secure NFT escrow swap platform for Vibe.market collections on Base blockchain"
+    description: "Secure NFT escrow swap platform for Vibe.market collections on Base blockchain",
     screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`, `${ROOT_URL}/screenshot-landscape.png`],
     iconUrl: `${ROOT_URL}/icons/flame-mascot-192.png`,
     splashImageUrl: `${ROOT_URL}/api/splash`,
