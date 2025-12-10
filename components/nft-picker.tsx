@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Search, Sparkles, ImageIcon, RefreshCw } from "lucide-react"
-import { fetchWalletNFTs, type NFTMetadata } from "@/lib/nft-service"
+import { Loader2, Search, Sparkles, ImageIcon, RefreshCw, Filter } from "lucide-react"
+import { fetchAllWalletNFTs, fetchVibeFeaturedPacks, type NFTMetadata, type VibeCollection } from "@/lib/nft-service"
 import { useWallet } from "@/lib/wallet-context"
 import Image from "next/image"
 
@@ -16,16 +16,22 @@ interface NFTPickerProps {
   buttonText?: string
 }
 
+const RARITY_LABELS = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+const RARITY_COLORS = ["bg-gray-500", "bg-green-500", "bg-blue-500", "bg-purple-500", "bg-yellow-500"]
+
 export function NFTPicker({ onSelect, selectedNFTs = [], buttonText = "Pick NFT" }: NFTPickerProps) {
   const { address, isConnected } = useWallet()
   const [nfts, setNfts] = useState<NFTMetadata[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
+  const [showVibeOnly, setShowVibeOnly] = useState(false)
+  const [vibeCollections, setVibeCollections] = useState<VibeCollection[]>([])
 
   useEffect(() => {
     if (isOpen && address) {
       loadNFTs()
+      loadVibeCollections()
     }
   }, [isOpen, address])
 
@@ -33,7 +39,7 @@ export function NFTPicker({ onSelect, selectedNFTs = [], buttonText = "Pick NFT"
     if (!address) return
     setIsLoading(true)
     try {
-      const fetchedNFTs = await fetchWalletNFTs(address)
+      const fetchedNFTs = await fetchAllWalletNFTs(address)
       setNfts(fetchedNFTs)
     } catch (error) {
       console.error("Error loading NFTs:", error)
@@ -42,7 +48,21 @@ export function NFTPicker({ onSelect, selectedNFTs = [], buttonText = "Pick NFT"
     }
   }
 
+  const loadVibeCollections = async () => {
+    try {
+      const collections = await fetchVibeFeaturedPacks()
+      setVibeCollections(collections)
+    } catch (error) {
+      console.error("Error loading Vibe collections:", error)
+    }
+  }
+
   const filteredNFTs = nfts.filter((nft) => {
+    // Apply Vibe.Market filter
+    if (showVibeOnly && !nft.isVibeMarket) {
+      return false
+    }
+
     const query = searchQuery.toLowerCase()
     return (
       nft.name.toLowerCase().includes(query) ||
@@ -50,6 +70,8 @@ export function NFTPicker({ onSelect, selectedNFTs = [], buttonText = "Pick NFT"
       nft.collection.toLowerCase().includes(query)
     )
   })
+
+  const vibeNFTCount = nfts.filter((nft) => nft.isVibeMarket).length
 
   const isSelected = (nft: NFTMetadata) => {
     return selectedNFTs.some(
@@ -109,6 +131,28 @@ export function NFTPicker({ onSelect, selectedNFTs = [], buttonText = "Pick NFT"
             </Button>
           </div>
 
+          <div className="flex items-center gap-2">
+            <Button
+              variant={showVibeOnly ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowVibeOnly(!showVibeOnly)}
+              className={
+                showVibeOnly
+                  ? "bg-purple-600 hover:bg-purple-700 text-white"
+                  : "border-purple-500/50 text-purple-400 hover:bg-purple-500/20"
+              }
+            >
+              <Filter className="h-3 w-3 mr-1" />
+              Vibe.Market
+              {vibeNFTCount > 0 && (
+                <Badge className="ml-1 bg-purple-400/30 text-purple-200 text-xs">{vibeNFTCount}</Badge>
+              )}
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              {filteredNFTs.length} NFT{filteredNFTs.length !== 1 ? "s" : ""}
+            </span>
+          </div>
+
           {isLoading ? (
             <div className="py-12 text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto text-orange-400" />
@@ -145,6 +189,18 @@ export function NFTPicker({ onSelect, selectedNFTs = [], buttonText = "Pick NFT"
                     {isSelected(nft) && (
                       <div className="absolute inset-0 bg-green-500/50 flex items-center justify-center">
                         <Badge className="bg-green-500">Selected</Badge>
+                      </div>
+                    )}
+                    {nft.isVibeMarket && (
+                      <div className="absolute top-1 left-1">
+                        <Badge className="bg-purple-600 text-[10px] px-1 py-0">VIBE</Badge>
+                      </div>
+                    )}
+                    {nft.isVibeMarket && nft.rarity !== undefined && nft.rarity > 0 && (
+                      <div className="absolute top-1 right-1">
+                        <Badge className={`${RARITY_COLORS[nft.rarity]} text-[10px] px-1 py-0`}>
+                          {RARITY_LABELS[nft.rarity]}
+                        </Badge>
                       </div>
                     )}
                   </div>
