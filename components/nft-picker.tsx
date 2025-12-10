@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Search, Sparkles, ImageIcon, RefreshCw, Filter } from "lucide-react"
+import { Loader2, Search, Sparkles, ImageIcon, RefreshCw, Filter, Swords, Shield, Zap, Star } from "lucide-react"
 import { fetchAllWalletNFTs, fetchVibeFeaturedPacks, type NFTMetadata, type VibeCollection } from "@/lib/nft-service"
 import { useWallet } from "@/lib/wallet-context"
 import Image from "next/image"
@@ -16,8 +16,15 @@ interface NFTPickerProps {
   buttonText?: string
 }
 
-const RARITY_LABELS = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
-const RARITY_COLORS = ["bg-gray-500", "bg-green-500", "bg-blue-500", "bg-purple-500", "bg-yellow-500"]
+const RARITY_LABELS = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic"]
+const RARITY_COLORS = [
+  "bg-gray-500",
+  "bg-green-500",
+  "bg-blue-500",
+  "bg-purple-500",
+  "bg-yellow-500",
+  "bg-gradient-to-r from-pink-500 to-orange-500",
+]
 
 export function NFTPicker({ onSelect, selectedNFTs = [], buttonText = "Pick NFT" }: NFTPickerProps) {
   const { address, isConnected } = useWallet()
@@ -27,6 +34,7 @@ export function NFTPicker({ onSelect, selectedNFTs = [], buttonText = "Pick NFT"
   const [isOpen, setIsOpen] = useState(false)
   const [showVibeOnly, setShowVibeOnly] = useState(false)
   const [vibeCollections, setVibeCollections] = useState<VibeCollection[]>([])
+  const [selectedCard, setSelectedCard] = useState<NFTMetadata | null>(null)
 
   useEffect(() => {
     if (isOpen && address) {
@@ -58,7 +66,6 @@ export function NFTPicker({ onSelect, selectedNFTs = [], buttonText = "Pick NFT"
   }
 
   const filteredNFTs = nfts.filter((nft) => {
-    // Apply Vibe.Market filter
     if (showVibeOnly && !nft.isVibeMarket) {
       return false
     }
@@ -72,6 +79,7 @@ export function NFTPicker({ onSelect, selectedNFTs = [], buttonText = "Pick NFT"
   })
 
   const vibeNFTCount = nfts.filter((nft) => nft.isVibeMarket).length
+  const legendaryCount = nfts.filter((nft) => nft.rarity === 4 || nft.rarity === 5).length
 
   const isSelected = (nft: NFTMetadata) => {
     return selectedNFTs.some(
@@ -88,6 +96,66 @@ export function NFTPicker({ onSelect, selectedNFTs = [], buttonText = "Pick NFT"
     })
     setIsOpen(false)
   }
+
+  const CardDetailsPanel = ({ card }: { card: NFTMetadata }) => (
+    <div className="absolute inset-0 bg-background/95 backdrop-blur p-3 flex flex-col z-10">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setSelectedCard(null)}
+        className="absolute top-1 right-1 h-6 w-6 p-0"
+      >
+        ×
+      </Button>
+      <div className="text-center mb-2">
+        <p className="font-bold text-sm truncate">{card.name}</p>
+        {card.rarity !== undefined && card.rarity > 0 && (
+          <Badge className={`${RARITY_COLORS[card.rarity]} text-[10px] mt-1`}>{RARITY_LABELS[card.rarity]}</Badge>
+        )}
+      </div>
+      {card.cardDetails && (
+        <div className="space-y-1 text-[10px]">
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1">
+              <Swords className="h-3 w-3 text-red-400" /> ATK
+            </span>
+            <span className="font-mono">{card.attackPower}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1">
+              <Shield className="h-3 w-3 text-blue-400" /> DEF
+            </span>
+            <span className="font-mono">{card.defense}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1">
+              <Zap className="h-3 w-3 text-yellow-400" /> SPD
+            </span>
+            <span className="font-mono">{card.speed}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1">
+              <Star className="h-3 w-3 text-purple-400" /> LCK
+            </span>
+            <span className="font-mono">{card.luck}</span>
+          </div>
+          {card.foilChance !== undefined && card.foilChance > 0 && (
+            <div className="mt-1 text-center">
+              <Badge className="bg-gradient-to-r from-cyan-400 to-pink-400 text-[8px]">{card.foilChance}% Foil</Badge>
+            </div>
+          )}
+        </div>
+      )}
+      <Button
+        size="sm"
+        onClick={() => handleSelect(card)}
+        disabled={isSelected(card)}
+        className="mt-auto bg-orange-500 hover:bg-orange-600 text-xs"
+      >
+        Select
+      </Button>
+    </div>
+  )
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -106,6 +174,9 @@ export function NFTPicker({ onSelect, selectedNFTs = [], buttonText = "Pick NFT"
           <DialogTitle className="flex items-center gap-2 text-orange-400">
             <Sparkles className="h-5 w-5 text-yellow-400" />
             Your NFTs
+            {legendaryCount > 0 && (
+              <Badge className="bg-yellow-500/20 text-yellow-400 text-xs ml-2">{legendaryCount} Special</Badge>
+            )}
           </DialogTitle>
         </DialogHeader>
 
@@ -170,14 +241,19 @@ export function NFTPicker({ onSelect, selectedNFTs = [], buttonText = "Pick NFT"
               {filteredNFTs.map((nft) => (
                 <button
                   key={`${nft.collection}-${nft.tokenId}`}
-                  onClick={() => handleSelect(nft)}
+                  onClick={() => (nft.cardDetails ? setSelectedCard(nft) : handleSelect(nft))}
                   disabled={isSelected(nft)}
                   className={`relative p-2 rounded-xl border-2 transition-all text-left ${
                     isSelected(nft)
                       ? "border-green-500 bg-green-500/20 opacity-50 cursor-not-allowed"
-                      : "border-orange-500/30 hover:border-orange-400 hover:bg-orange-500/10 hover:scale-[1.02]"
+                      : nft.rarity && nft.rarity >= 4
+                        ? "border-yellow-500/50 hover:border-yellow-400 hover:bg-yellow-500/10 hover:scale-[1.02]"
+                        : "border-orange-500/30 hover:border-orange-400 hover:bg-orange-500/10 hover:scale-[1.02]"
                   }`}
                 >
+                  {selectedCard?.tokenId === nft.tokenId && selectedCard?.collection === nft.collection && (
+                    <CardDetailsPanel card={nft} />
+                  )}
                   <div className="aspect-square relative rounded-lg overflow-hidden bg-muted mb-2">
                     <Image
                       src={nft.image || "/placeholder.svg?height=100&width=100&query=nft"}
@@ -200,6 +276,14 @@ export function NFTPicker({ onSelect, selectedNFTs = [], buttonText = "Pick NFT"
                       <div className="absolute top-1 right-1">
                         <Badge className={`${RARITY_COLORS[nft.rarity]} text-[10px] px-1 py-0`}>
                           {RARITY_LABELS[nft.rarity]}
+                        </Badge>
+                      </div>
+                    )}
+                    {nft.cardDetails && (
+                      <div className="absolute bottom-1 right-1">
+                        <Badge className="bg-black/70 text-[8px] px-1 py-0 flex items-center gap-0.5">
+                          <Swords className="h-2 w-2" />
+                          {nft.attackPower}
                         </Badge>
                       </div>
                     )}

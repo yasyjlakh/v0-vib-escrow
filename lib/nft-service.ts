@@ -16,6 +16,8 @@ export interface VibeCollection {
   isFeatured?: boolean
 }
 
+import { getCardDetails, type VibeCard } from "./card-tracking"
+
 export interface NFTMetadata {
   tokenId: string
   collection: string
@@ -25,6 +27,13 @@ export interface NFTMetadata {
   owner: string
   rarity?: number
   isVibeMarket?: boolean
+  cardDetails?: VibeCard
+  attackPower?: number
+  defense?: number
+  speed?: number
+  luck?: number
+  wear?: number
+  foilChance?: number
 }
 
 export async function fetchVibeCollections(): Promise<VibeCollection[]> {
@@ -112,16 +121,40 @@ export async function fetchVibeNFTsByOwner(address: string): Promise<NFTMetadata
       return []
     }
 
-    return data.data.map((nft: any) => ({
-      tokenId: nft.tokenId?.toString() || "0",
-      collection: nft.contractAddress || "",
-      collectionName: nft.game?.name || nft.contractDetails?.name || "Vibe Collection",
-      name: nft.metadata?.name || `#${nft.tokenId}`,
-      image: nft.metadata?.image || nft.game?.image || "",
-      owner: address,
-      rarity: nft.rarity ?? 0,
-      isVibeMarket: true,
-    }))
+    const nftsWithDetails = await Promise.all(
+      data.data.map(async (nft: any) => {
+        const contractAddress = nft.contractAddress || ""
+        const tokenId = nft.tokenId?.toString() || "0"
+
+        // Try to get card details with rarity and attributes
+        let cardDetails: VibeCard | null = null
+        try {
+          cardDetails = await getCardDetails(contractAddress, tokenId)
+        } catch {
+          // Card details not available
+        }
+
+        return {
+          tokenId,
+          collection: contractAddress,
+          collectionName: nft.game?.name || nft.contractDetails?.name || "Vibe Collection",
+          name: nft.metadata?.name || `#${nft.tokenId}`,
+          image: nft.metadata?.image || nft.game?.image || "",
+          owner: address,
+          rarity: cardDetails?.rarity ?? nft.rarity ?? 0,
+          isVibeMarket: true,
+          cardDetails: cardDetails || undefined,
+          attackPower: cardDetails?.attackPower,
+          defense: cardDetails?.defense,
+          speed: cardDetails?.speed,
+          luck: cardDetails?.luck,
+          wear: cardDetails?.wear,
+          foilChance: cardDetails?.foilChance,
+        }
+      }),
+    )
+
+    return nftsWithDetails
   } catch (error) {
     console.error("Error fetching Vibe NFTs:", error)
     return []
@@ -263,6 +296,13 @@ export async function fetchNFTMetadata(collectionAddress: string, tokenId: strin
           owner: "",
           rarity: nft.rarity ?? 0,
           isVibeMarket: true,
+          cardDetails: undefined,
+          attackPower: undefined,
+          defense: undefined,
+          speed: undefined,
+          luck: undefined,
+          wear: undefined,
+          foilChance: undefined,
         }
       }
     }
@@ -287,6 +327,13 @@ export async function fetchNFTMetadata(collectionAddress: string, tokenId: strin
       image: media.gateway || media.raw || metadata.image || "/digital-art-collection.png",
       owner: "",
       isVibeMarket: false,
+      cardDetails: undefined,
+      attackPower: undefined,
+      defense: undefined,
+      speed: undefined,
+      luck: undefined,
+      wear: undefined,
+      foilChance: undefined,
     }
   } catch (error) {
     console.error("Error fetching NFT metadata from server:", error)
