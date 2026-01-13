@@ -1,6 +1,7 @@
 // Card tracking service for Vibe.Market BoosterDrop NFTs
 import { ethers } from "ethers"
 import { BOOSTER_DROP_ABI, BASE_RPC_URL, CardRarity, RARITY_LABELS } from "./contract"
+import { YOUR_DROP_ADDRESS } from "./vibe-config"
 
 export interface VibeCard {
   tokenId: string
@@ -123,10 +124,13 @@ export async function trackUserCards(userAddress: string, contractAddress: strin
   }
 }
 
-// Get comprehensive tracking result with counts
+export async function trackYourCollectionCards(userAddress: string): Promise<VibeCard[]> {
+  return trackUserCards(userAddress, YOUR_DROP_ADDRESS)
+}
+
 export async function getCardTrackingResult(
   userAddress: string,
-  contractAddresses: string[],
+  contractAddresses: string[] = [YOUR_DROP_ADDRESS],
 ): Promise<CardTrackingResult> {
   const allCards: VibeCard[] = []
 

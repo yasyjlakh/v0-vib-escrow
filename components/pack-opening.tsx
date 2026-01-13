@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, Package, Sparkles } from "lucide-react"
-import { fetchVibeNFTsByOwner } from "@/lib/nft-service"
+import { trackYourCollectionCards } from "@/lib/card-tracking"
+import { YOUR_DROP_ADDRESS } from "@/lib/vibe-config"
 import { useWallet } from "@/lib/wallet-context"
 import { ethers } from "ethers"
 import { BOOSTER_DROP_ABI, BASE_RPC_URL, CardRarity, RARITY_LABELS } from "@/lib/contract"
@@ -54,10 +55,19 @@ export function PackOpening({ onPackOpened }: PackOpeningProps) {
     if (!address) return
     setIsLoading(true)
     try {
-      const vibeNFTs = await fetchVibeNFTsByOwner(address)
-      // Filter for unopened packs
-      const unopened = vibeNFTs.filter((nft) => !nft.cardDetails?.isOpened)
-      setUnopenedPacks(unopened)
+      const cards = await trackYourCollectionCards(address)
+      const unopened = cards.filter(
+        (card) => !card.isOpened || (card.rarity === CardRarity.Common && card.randomValue === BigInt(0)),
+      )
+      console.log("[v0] Loaded unopened packs from your collection:", unopened.length)
+      const packs = unopened.map((card) => ({
+        tokenId: card.tokenId,
+        collection: YOUR_DROP_ADDRESS,
+        name: `Pack #${card.tokenId}`,
+        image: "/vibe-pack.jpg",
+        cardDetails: card,
+      }))
+      setUnopenedPacks(packs)
     } catch (error) {
       console.error("Error loading unopened packs:", error)
     } finally {
@@ -68,17 +78,16 @@ export function PackOpening({ onPackOpened }: PackOpeningProps) {
   const openPack = async (pack: any) => {
     setIsOpening(true)
     try {
-      // Simulate pack opening animation
       await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      // Get card rarity from contract
       const provider = new ethers.JsonRpcProvider(BASE_RPC_URL)
-      const contract = new ethers.Contract(pack.collection, BOOSTER_DROP_ABI, provider)
+      const contract = new ethers.Contract(YOUR_DROP_ADDRESS, BOOSTER_DROP_ABI, provider)
 
       try {
         const rarityInfo = await contract.getTokenRarity(pack.tokenId)
         const rarity = Number(rarityInfo.rarity) as CardRarity
         const multiplier = RARITY_MULTIPLIERS[rarity]
+
+        console.log("[v0] Pack opened - Rarity:", RARITY_LABELS[rarity], "Multiplier:", multiplier)
 
         setRevealedCard({
           rarity,
@@ -86,12 +95,11 @@ export function PackOpening({ onPackOpened }: PackOpeningProps) {
           image: pack.image,
         })
 
-        // Wait for reveal animation
         await new Promise((resolve) => setTimeout(resolve, 2000))
 
         onPackOpened(rarity, multiplier)
-      } catch {
-        // If pack hasn't been opened on-chain yet, use random rarity
+      } catch (error) {
+        console.error("[v0] Error reading rarity from contract:", error)
         const randomRarity = Math.floor(Math.random() * 6) as CardRarity
         const multiplier = RARITY_MULTIPLIERS[randomRarity]
 
