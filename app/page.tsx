@@ -6,8 +6,9 @@ import { CreateOffer } from "@/components/create-offer"
 import { OffersList } from "@/components/offers-list"
 import { BatchSend } from "@/components/batch-send"
 import { WindowMenu } from "@/components/window-menu"
+import { PackOpeningHero } from "@/components/pack-opening-hero"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Sparkles, Zap, Rocket } from "lucide-react"
+import { Sparkles, Zap, Rocket, Gamepad2 } from "lucide-react"
 
 function MiniKitInitializer() {
   useEffect(() => {
@@ -35,7 +36,7 @@ function MiniKitInitializer() {
 }
 
 export default function Home() {
-  const [currentTab, setCurrentTab] = useState("create")
+  const [currentTab, setCurrentTab] = useState("play")
 
   return (
     <main className="flex-1 flex flex-col relative overflow-hidden">
@@ -50,7 +51,6 @@ export default function Home() {
           backgroundRepeat: "no-repeat",
         }}
       >
-        {/* Dark overlay for readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/90" />
       </div>
 
@@ -60,7 +60,6 @@ export default function Home() {
           <ConnectWallet />
         </div>
 
-        {/* Title section */}
         <div className="text-center mt-8 mb-6">
           <h1 className="text-4xl font-black tracking-tight" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
             <span className="bg-gradient-to-r from-cyan-400 via-pink-400 to-yellow-400 bg-clip-text text-transparent drop-shadow-lg">
@@ -77,9 +76,16 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="flex-1 p-4 relative z-10">
+      <div className="flex-1 p-4 relative z-10 overflow-y-auto">
         <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4 bg-black/50 backdrop-blur-lg border border-cyan-500/30 p-1 rounded-xl">
+          <TabsList className="grid w-full grid-cols-4 mb-4 bg-black/50 backdrop-blur-lg border border-cyan-500/30 p-1 rounded-xl">
+            <TabsTrigger
+              value="play"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-orange-500 data-[state=active]:text-white font-bold flex items-center gap-1 rounded-lg transition-all"
+            >
+              <Gamepad2 className="h-3 w-3" />
+              Play
+            </TabsTrigger>
             <TabsTrigger
               value="offers"
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-purple-500 data-[state=active]:text-white font-bold flex items-center gap-1 rounded-lg transition-all"
@@ -102,6 +108,10 @@ export default function Home() {
               Send
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="play" className="animate-in fade-in slide-in-from-bottom-2">
+            <PackOpeningHero />
+          </TabsContent>
 
           <TabsContent value="offers" className="space-y-4 animate-in fade-in slide-in-from-left-2">
             <OffersList />

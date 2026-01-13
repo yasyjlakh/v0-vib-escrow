@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Menu, Plus, Send, List, HelpCircle, ExternalLink, Flame } from "lucide-react"
+import { Menu, Plus, Send, List, HelpCircle, ExternalLink, Flame, Gamepad2 } from "lucide-react"
 
 interface WindowMenuProps {
   onNavigate: (tab: string) => void
@@ -21,10 +21,10 @@ export function WindowMenu({ onNavigate, currentTab }: WindowMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   const menuItems = [
+    { id: "play", label: "Play Game", icon: Gamepad2, description: "Open packs & play" },
     { id: "offers", label: "View Offers", icon: List, description: "Browse active swaps" },
     { id: "create", label: "Create Offer", icon: Plus, description: "Start a new swap" },
     { id: "batch", label: "Batch Send", icon: Send, description: "Send multiple assets" },
-    { id: "game", label: "Play Game", icon: Flame, description: "Open packs & play", link: "/game" },
   ]
 
   return (
@@ -51,11 +51,7 @@ export function WindowMenu({ onNavigate, currentTab }: WindowMenuProps) {
           <DropdownMenuItem
             key={item.id}
             onClick={() => {
-              if (item.link) {
-                window.location.href = item.link
-              } else {
-                onNavigate(item.id)
-              }
+              onNavigate(item.id)
               setIsOpen(false)
             }}
             className={`cursor-pointer ${
